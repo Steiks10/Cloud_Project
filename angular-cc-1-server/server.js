@@ -1,7 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
-
+const selectQuery = require('./dbConection');
 const app = express();
 const port = 3000;
 
@@ -20,32 +20,22 @@ app.use(express.json());
 
 // GET route - Allows to get all the items
 // example: localhost:3000/clothes?page=0&perPage=2
+// GET route - Allows to get all the items
+// example: localhost:3000/clothes?page=0&perPage=2
 app.get("/clothes", (req, res) => {
   const page = parseInt(req.query.page) || 0;
   const perPage = parseInt(req.query.perPage) || 10;
+  const start = page * perPage;
 
-  fs.readFile("db.json", "utf8", (err, data) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send("Internal Server Error");
-      return;
-    }
-
-    const jsonData = JSON.parse(data);
-
-    const start = page * perPage;
-    const end = start + perPage;
-
-    const result = jsonData.items.slice(start, end);
-
-    res.status(200).json({
-      items: result,
-      total: jsonData.items.length,
-      page,
-      perPage,
-      totalPages: Math.ceil(jsonData.items.length / perPage),
-    });
-  });
+  // Call the selectQuery function to fetch paginated product data
+  selectQuery(perPage, start)
+      .then(jsonData => {
+        res.status(200).json(jsonData);
+      })
+      .catch(err => {
+        console.error('Error fetching products:', err);
+        res.status(500).send("Internal Server Error");
+      });
 });
 
 // POST route - Allows to add a new item
