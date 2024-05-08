@@ -48,3 +48,4 @@ UPDATE products SET price = 24.99 WHERE name = 'Black Hoodie';
 DELETE FROM products WHERE name = 'Black Hoodie';
 
 SELECT COUNT(*) as total FROM products
+

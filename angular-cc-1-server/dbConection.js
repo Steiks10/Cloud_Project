@@ -1,13 +1,13 @@
 const { Pool } = require('pg');
+const { dbConfig } = require('./config');
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'clothing_store',
-    password: 'password',
-    port: 5432,
+    user: dbConfig.user,
+    host: dbConfig.host,
+    database: dbConfig.database,
+    password: dbConfig.password,
+    port: dbConfig.port,
 });
-
 async function selectQuery(perPage, start) {
     let client;
     try {
