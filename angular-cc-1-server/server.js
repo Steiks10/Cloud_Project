@@ -1,7 +1,8 @@
 const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
-const selectQuery = require('./dbConection');
+const selectQuery = require('./queries/SelectQuery');
+const CreateQuery = require("./queries/InsertQuery");
 const app = express();
 const port = 3000;
 
@@ -50,41 +51,12 @@ app.get("/clothes", (req, res) => {
 */
 app.post("/clothes", (req, res) => {
   const { image, name, price, rating } = req.body;
-
-  fs.readFile("db.json", "utf8", (err, data) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send("Internal Server Error");
-      return;
-    }
-
-    const jsonData = JSON.parse(data);
-
-    const maxId = jsonData.items.reduce(
-      (max, item) => Math.max(max, item.id),
-      0
-    );
-
-    const newItem = {
-      id: maxId + 1,
-      image,
-      name,
-      price,
-      rating,
-    };
-
-    jsonData.items.push(newItem);
-
-    fs.writeFile("db.json", JSON.stringify(jsonData), (err) => {
-      if (err) {
-        console.log(err);
-        res.status(500).send("Internal Server Error");
-        return;
-      }
-
-      res.status(201).json(newItem);
-    });
-  });
+  CreateQuery(name, image, price, rating)
+      .then(()=>{
+        res.status(201).json({ message: 'Product inserted successfully' });
+      })
+      .catch(err=>{console.error('Error inserting product:', err);
+        res.status(500).json({ message: 'Failed to insert product' });})
 });
 
 // PUT route - Allows to update an item
