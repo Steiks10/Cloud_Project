@@ -2,7 +2,8 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const selectQuery = require('./queries/SelectQuery');
-const CreateQuery = require("./queries/InsertQuery");
+const InsertQuery = require("./queries/InsertQuery");
+const UpdateQuery = require("./queries/UpdateQuery");
 const app = express();
 const port = 3000;
 
@@ -51,12 +52,20 @@ app.get("/clothes", (req, res) => {
 */
 app.post("/clothes", (req, res) => {
   const { image, name, price, rating } = req.body;
-  CreateQuery(name, image, price, rating)
+  InsertQuery(name, image, price, rating)
       .then(()=>{
         res.status(201).json({ message: 'Product inserted successfully' });
       })
-      .catch(err=>{console.error('Error inserting product:', err);
-        res.status(500).json({ message: 'Failed to insert product' });})
+      .catch(
+          err=>{
+            console.error('Error inserting product:', err);
+            res.status(500).json(
+                {
+                  message: 'Failed to insert product'
+                }
+            );
+          }
+      )
 });
 
 // PUT route - Allows to update an item
@@ -72,41 +81,20 @@ app.post("/clothes", (req, res) => {
 app.put("/clothes/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const { image, name, price, rating } = req.body;
-
-  fs.readFile("db.json", "utf8", (err, data) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send("Internal Server Error");
-      return;
-    }
-
-    const jsonData = JSON.parse(data);
-
-    const index = jsonData.items.findIndex((item) => item.id === id);
-
-    if (index === -1) {
-      res.status(404).send("Not Found");
-      return;
-    }
-
-    jsonData.items[index] = {
-      id,
-      image,
-      name,
-      price,
-      rating,
-    };
-
-    fs.writeFile("db.json", JSON.stringify(jsonData), (err) => {
-      if (err) {
-        console.log(err);
-        res.status(500).send("Internal Server Error");
-        return;
-      }
-
-      res.status(200).json(jsonData.items[index]);
-    });
-  });
+  UpdateQuery(id, name, image, price, rating)
+      .then(()=>{
+        res.status(200).json({ message: 'Product updated successfully' });
+      })
+      .catch(
+          err=>{
+            console.error('Error updating product:', err);
+            res.status(500).json(
+                {
+                  message: 'Failed to update product'
+                }
+            );
+          }
+      )
 });
 
 // DELETE route - Allows to delete an item
