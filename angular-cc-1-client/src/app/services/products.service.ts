@@ -2,12 +2,22 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 import { PaginationParams, Products } from '../../types';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductsService {
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private http: HttpClient) {}
+
+  // getIpContainer = (
+  //   url: string,
+  // ): Observable<JSON> => {
+  //   return this.apiService.get(url, {
+  //     responseType: 'json',
+  //   });
+  // };
+  
 
   // Getting products from the API
   getProducts = (
@@ -19,6 +29,7 @@ export class ProductsService {
       responseType: 'json',
     });
   };
+
 
   // Adding a product via the API
   addProduct = (url: string, body: any): Observable<any> => {
