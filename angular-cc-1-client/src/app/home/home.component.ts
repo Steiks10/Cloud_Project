@@ -32,6 +32,7 @@ export class HomeComponent {
 
   displayEditPopup: boolean = false;
   displayAddPopup: boolean = false;
+  ipContainer: string = '';
 
   toggleEditPopup(product: Product) {
     this.selectedProduct = product;
@@ -86,7 +87,7 @@ export class HomeComponent {
 
   fetchProducts(page: number, perPage: number) {
     this.productsService
-      .getProducts('http://localhost:3000/clothes', { page, perPage })
+      .getProducts('http://10.70.203.41:3000/clothes', { page, perPage }) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data: Products) => {
           this.products = data.items;
@@ -100,7 +101,7 @@ export class HomeComponent {
 
   editProduct(product: Product, id: number) {
     this.productsService
-      .editProduct(`http://localhost:3000/clothes/${id}`, product)
+      .editProduct(`http://10.70.203.41:3000/clothes/${id}`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);
@@ -115,7 +116,7 @@ export class HomeComponent {
 
   deleteProduct(id: number) {
     this.productsService
-      .deleteProduct(`http://localhost:3000/clothes/${id}`)
+      .deleteProduct(`http://10.70.203.41:3000/clothes/${id}`) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);
@@ -130,7 +131,7 @@ export class HomeComponent {
 
   addProduct(product: Product) {
     this.productsService
-      .addProduct(`http://localhost:3000/clothes`, product)
+      .addProduct(`http://10.70.203.41:3000/clothes`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);

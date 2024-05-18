@@ -5,19 +5,31 @@ const selectQuery = require('./queries/SelectQuery');
 const InsertQuery = require("./queries/InsertQuery");
 const UpdateQuery = require("./queries/UpdateQuery");
 const DeleteQuery = require("./queries/DeleteQuery");
+const getContainerIP = require("./ip_container");
 
 const app = express();
 const port = 3000;
 
+
+const containerName = 'front-endlb';
+const ipAddress = getContainerIP(containerName);
+  if (ipAddress) {
+      console.log(`La dirección IP del contenedor ${containerName} es: ${ipAddress}`);
+  } else {
+      console.log(`No se pudo obtener la dirección IP del contenedor ${containerName}`);
+  }
 // Cors configuration - Allows requests from localhost:4200
+//Hacer ip dinamica de acuerdo al nombre del contenedor balanceador de carga del front-end
 const corsOptions = {
-  origin: "http://localhost:4200",
+  origin: `http://${ipAddress}:4200`, 
   optionsSuccessStatus: 204,
   methods: "GET, POST, PUT, DELETE",
 };
 
 // Use cors middleware
 app.use(cors(corsOptions));
+
+
 
 // Use express.json() middleware to parse JSON bodies of requests
 app.use(express.json());
@@ -41,6 +53,7 @@ app.get("/clothes", (req, res) => {
         res.status(500).send("Internal Server Error");
       });
 });
+
 
 // POST route - Allows to add a new item
 // example: localhost:3000/clothes
