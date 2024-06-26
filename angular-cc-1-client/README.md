@@ -49,7 +49,7 @@ Before you begin, ensure you have the following installed:
    ```bash
    ng serve
    ```
-2. Open your browser and navigate to http://localhost:4200/ to see the app in action.
+2. Open your browser and navigate to http://localhost:/ to see the app in action.
 
 ## License
 
