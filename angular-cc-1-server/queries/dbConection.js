@@ -8,4 +8,4 @@ const pool = new Pool({
     password: dbConfig.password,
     port: dbConfig.port,
 });
-module.exports= pool;
+module.exports = pool;

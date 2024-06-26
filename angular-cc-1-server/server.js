@@ -14,14 +14,14 @@ const port = 3000;
 // const containerName = 'front-endlb';
 // const ipAddress = getContainerIP(containerName);
 //   if (ipAddress) {
-//       console.log(`La dirección IP del contenedor ${containerName} es: ${ipAddress}`);
+//       console.log(`La dirección IP del contenedor ${containerName} es: ${ipAddress}`);x
 //   } else {
 //       console.log(`No se pudo obtener la dirección IP del contenedor ${containerName}`);
 //   }
 // Cors configuration - Allows requests from localhost:4200
 //Hacer ip dinamica de acuerdo al nombre del contenedor balanceador de carga del front-end
 const corsOptions = {
-  origin: 'http://10.70.203.63:4200', 
+  origin: 'http://localhost:4200', 
   optionsSuccessStatus: 204,
   methods: "GET, POST, PUT, DELETE",
 };
