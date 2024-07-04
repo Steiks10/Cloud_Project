@@ -21,14 +21,13 @@ const port = 3000;
 // Cors configuration - Allows requests from localhost:4200
 //Hacer ip dinamica de acuerdo al nombre del contenedor balanceador de carga del front-end
 const corsOptions = {
-  origin: 'http://localhost:4200', 
+  origin: '*',
   optionsSuccessStatus: 204,
   methods: "GET, POST, PUT, DELETE",
 };
 
-// Use cors middleware
+// Use cors middlewareq
 app.use(cors(corsOptions));
-
 
 
 // Use express.json() middleware to parse JSON bodies of requests
