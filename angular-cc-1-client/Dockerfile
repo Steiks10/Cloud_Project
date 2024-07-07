@@ -8,7 +8,8 @@ RUN npm install
 COPY . .
 RUN npm run build 
 EXPOSE 4200
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["npm", "start", "--", "--host=0.0.0.0"]
 
 
 # Intento 2
