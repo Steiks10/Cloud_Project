@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]  # Ajusta según tu rama principal
 
-on: workflow_dispatch
+  workflow_dispatch
 
 jobs:
   deploy:
