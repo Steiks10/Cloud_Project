@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  docker-deployment:
+  dockerDeployment:
     runs-on: ubuntu-latest
     
     - name: Docker Login
