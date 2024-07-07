@@ -2,7 +2,9 @@ name: Docker deployment
 
 on:
   push:
-    branches: [ master ]  # Ajusta según tu rama principal
+    branches: [ "master" ]  # Ajusta según tu rama principal
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   deploy:
