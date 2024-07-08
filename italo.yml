@@ -1,0 +1,152 @@
+name: Docker Image CI
+run-name: Testing - Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  testFront:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Metadata
+        run: |
+          echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+          echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+          echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }} (FRONTEND)."
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check repo
+        run: |
+          echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+          echo "🖥️ The workflow is now ready to test your code on the runner."
+          ls ${{ github.workspace }}
+      - name: Install Node
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash
+          sudo apt-get install nodejs -y
+          node -v
+          echo "🎉 Node has been installed."
+      - name: Install Dependencies
+        run: |
+          cd ${{ github.workspace }}/NNotes
+          npm install
+          echo "🎉 Frontend app dependencies have been installed"
+      - name: Run Server
+        env:
+          PORT: 3000
+          DB_URI: "probando"
+          MODE: "test"
+        run: |
+          cd ${{ github.workspace }}/NNotes
+          nohup npx ts-node src/app.ts &
+          echo "🚀 Server is running on port $PORT"
+      - name: Wait
+        run: sleep 12
+      - name: Run Frontend Tests
+        run: |
+          cd ${{ github.workspace }}/NNotes
+          npm run test
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          major_pattern: "major:"
+          minor_pattern: "feat:"
+          format: "${major}.${minor}.${increment}"
+        id: version
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build Docker Image
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker build -t delta27222/nnotes_frontend:$NEW_VERSION ./NNotes/
+          docker build -t delta27222/nnotes_frontend:latest ./NNotes/
+      - name: Push Docker Image
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker push delta27222/nnotes_frontend:$NEW_VERSION
+          docker push delta27222/nnotes_frontend:latest
+
+  testBack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Metadata
+        run: |
+          echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+          echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+          echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }} (BACKEND)."
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check repo
+        run: |
+          echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+          echo "🖥️ The workflow is now ready to test your code on the runner."
+          ls ${{ github.workspace }}
+      - name: Install Node
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash
+          sudo apt-get install nodejs -y
+          node -v
+          echo "🎉 Node has been installed."
+      - name: Install Dependencies
+        run: |
+          cd ${{ github.workspace }}/NNotes-RestAPI
+          npm install
+          echo "🎉 Backend app dependencies have been installed."
+      - name: Run Server
+        env:
+          PORT: 3001
+          DB_URI: "probando"
+          MODE: "test"
+        run: |
+          cd ${{ github.workspace }}/NNotes-RestAPI
+          nohup npx ts-node src/app.ts &
+          echo "🚀 Server is running on port $PORT"
+      - name: Wait
+        run: sleep 12
+      # - name: Run Tests
+      #   run: |
+      #     cd ${{ github.workspace }}/NNotes-RestAPI
+      #     npm run test
+      #     ss -ntlp
+      #     tail -n 10 nohup.out
+      # - name: Stop Server
+      #   # Deberia ser sudo fuser -k $PORT/tcp
+      #   run: |
+      #     sudo fuser -k 3001/tcp
+      #     echo "🛑 Server has been stopped."
+
+      # Hasta aqui llega el test del frontend
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v4.0.3
+        with:
+          major_pattern: "major:"
+          minor_pattern: "feat:"
+          format: "${major}.${minor}.${increment}"
+        id: version
+      - name: Docker Login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build Docker Image
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker build -t delta27222/nnotes_backend ./NNotes-RestAPI/
+      - name: Push Docker Image
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker push delta27222/nnotes_backend
