@@ -13,17 +13,17 @@ jobs:
     steps:
       - name: Docker Login
         env:
-          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
-          docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Build Docker Image
         run: |
-          docker build -t express:latest ./angular-cc-1-server/
+          cd ../angular-cc-1-client
+          docker build -t express:lastest/ $DOCKER_USER/express:latest
       - name: Push Docker Image
         run: |
-          docker push $DOCKERHUB_USER/postgres:15
+          docker push $DOCKER_USER/express:latest
 
 # name: Docker deployment
 
