@@ -13,10 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Build Docker Image
         run: |
           cd angular-cc-1-client
-          sudo docker build -t express:latest
+          sudo docker build -t express:latest .
+    
       - name: Docker Login
         env:
           DOCKER_USER: ${{ secrets.DOCKERHUB_USER }}
