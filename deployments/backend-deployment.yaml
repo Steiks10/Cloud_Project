@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: marcocastrof/express:latest
+        image: steiks1/express:latest
         ports:
         - containerPort: 3000
         env:
