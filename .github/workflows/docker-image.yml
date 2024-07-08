@@ -30,7 +30,10 @@ jobs:
       - name: Push Docker backend Image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
-        
+      
+      - name: Checkout code again
+        uses: actions/checkout@v2
+
       - name: Build Frontend image
         run: |
           cd angular-cc-1-client
