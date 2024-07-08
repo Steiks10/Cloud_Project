@@ -76,7 +76,7 @@ jobs:
       - name: Deploy Backend Service
         run: |
           # Nombre del archivo YAML del deployment del backend (plantilla)
-          TEMPLATE_FILE="backend-deployment-template.yaml"
+          TEMPLATE_FILE="../../deployments/backend-deployment-template.yaml"
           USER_NAME=${{ secrets.DOCKERHUB_USERNAME }}
 
           # Nombre del archivo YAML del deployment del backend (resultado final)
@@ -111,7 +111,7 @@ jobs:
       - name: Deploy Frontend Service
         run: |
           # Nombre del archivo YAML del deployment del frontend (plantilla)
-          TEMPLATE_FILE="frontend-deployment-template.yaml"
+          TEMPLATE_FILE="../../frontend-deployment-template.yaml"
 
           # Nombre del archivo YAML del deployment del frontend (resultado final)
           OUTPUT_FILE="frontend-deployment.yaml"
