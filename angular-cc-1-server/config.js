@@ -1,9 +1,9 @@
 module.exports = {
     dbConfig: {
-        user: process.env.DB_USER || 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'clothing_store',
-        password: process.env.DB_PASSWORD || 'postgres',
-        port: parseInt(process.env.DB_PORT || '5432'),
+        user: 'db-1',
+        host: process.env.DB_HOST, // Nombre del servicio de la base de datos
+        database: 'clothing_store',
+        password: 'db-1',
+        port: 5432,
     }
 };
