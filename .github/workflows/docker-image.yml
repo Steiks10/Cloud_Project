@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Build Docker Image
         run: |
-          cd ../angular-cc-1-client
+          cd angular-cc-1-client
           sudo docker build -t express:latest
       - name: Docker Login
         env:
