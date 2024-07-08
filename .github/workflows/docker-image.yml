@@ -19,7 +19,7 @@ jobs:
           docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
       - name: Build Docker Image
         run: |
-          docker build -t express:latest ./angular-cc-1-server/
+          docker build -t express:latest ../angular-cc-1-server/
       - name: Push Docker Image
         run: |
           docker push $DOCKERHUB_USER/postgres:15
