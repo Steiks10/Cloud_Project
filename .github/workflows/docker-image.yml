@@ -16,59 +16,135 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          cd angular-cc-1-server
+          cd angular-cc-1-client
           docker build -t express:latest .
-    
+
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Create backend image tag
+
+      - name: Create tag
         run: |
           docker tag express:latest ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
-      - name: Push Docker backend Image
+
+      - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
-      
-      - name: Checkout code again
-        uses: actions/checkout@v2
 
-      - name: Build Frontend image
+      - name: Deploy PostgreSQL and Execute SQL Script
         run: |
-          cd angular-cc-1-client
-          docker build -t angular:latest .
-      - name: Create frontend tag
-        run: |
-          docker tag angular:latest ${{ secrets.DOCKERHUB_USERNAME }}/angular:latest
-      - name: Push Docker frontend Image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular:latest
-# name: Docker deployment
+          # Nombre del archivo SQL a cargar
+          SQL_FILE="clothing_store_data.sql"
+          # Nombre del YAML de despliegue
+          YAML_FILE="db-1-deployment.yaml"
 
-# on:
-#   push:
-#     branches: [ "master" ]  # Ajusta según tu rama principal
-#   pull_request:
-#     branches: [ "master" ]
+          # Verificar si el deployment ya existe
+          if microk8s.kubectl get deployment db-1-deployment; then
+            echo "El deployment db-1-deployment ya existe. Actualizando la imagen..."
+            microk8s.kubectl set image deployment/db-1-deployment db-1=${{ secrets.DOCKERHUB_USERNAME }}/express:latest --record
+          else
+            echo "Aplicando YAML de despliegue para crear el pod de PostgreSQL (db-1)..."
+            microk8s.kubectl apply -f ${YAML_FILE}
 
-# jobs:
-#   dockerDeployment:
-#     runs-on: ubuntu-latest
-    
-#     steps:
-#       - uses: actions/checkout@v2
-      
-#       - name: Docker Login
-#         uses: docker/login-action@v1
-#         with:
-#           username: ${{ secrets.DOCKERHUB_USER }}
-#           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      
-#       - name: Build Docker Image
-#         run: |
-#           docker build -t ${{ secrets.DOCKERHUB_USER }}/express:latest ./angular-cc-1-server/
-      
-#       - name: Push Docker Image
-#         run: |
-#           docker push ${{ secrets.DOCKERHUB_USER }}/express:latest
+            # Esperar unos segundos para asegurar que el pod esté completamente creado
+            sleep 10
+          fi
+
+          # Obtener el nombre del pod de PostgreSQL (db-1)
+          POD_NAME=$(microk8s.kubectl get pods -l app=db-1 -o=jsonpath='{.items[0].metadata.name}')
+          echo "Pod de PostgreSQL (db-1) creado: ${POD_NAME}"
+
+          # Verificar si la tabla products existe
+          TABLE_EXISTS=$(microk8s.kubectl exec ${POD_NAME} -- psql -U postgres -d clothing_store -tAc "SELECT 1 FROM pg_tables WHERE tablename='products';")
+
+          if [ "$TABLE_EXISTS" = "1" ]; then
+            echo "La tabla products ya existe. No se ejecutará el script SQL."
+          else
+            # Copiar el archivo SQL al contenedor de PostgreSQL (db-1)
+            echo "Copiando archivo SQL (${SQL_FILE}) al contenedor de PostgreSQL (db-1)..."
+            microk8s.kubectl cp ${SQL_FILE} ${POD_NAME}:/tmp/${SQL_FILE}
+
+            # Ejecutar el script SQL dentro del contenedor de PostgreSQL (db-1)
+            echo "Ejecutando script SQL (${SQL_FILE}) en la base de datos clothing_store..."
+            microk8s.kubectl exec ${POD_NAME} -- psql -U postgres -d clothing_store -f /tmp/${SQL_FILE}
+
+            echo "Script SQL ejecutado exitosamente."
+          fi
+
+      - name: Deploy Backend Service
+        run: |
+          # Nombre del archivo YAML del deployment del backend (plantilla)
+          TEMPLATE_FILE="../../deployments/backend-deployment-template.yaml"
+          USER_NAME=${{ secrets.DOCKERHUB_USERNAME }}
+
+          # Nombre del archivo YAML del deployment del backend (resultado final)
+          OUTPUT_FILE="backend-deployment.yaml"
+
+          # Obtener la IP del servicio de la base de datos
+          DB_IP=$(microk8s.kubectl get svc db-1-service -o jsonpath='{.spec.clusterIP}')
+          echo "IP del servicio de la base de datos: $DB_IP"
+
+          # Exportar la IP de la base de datos como una variable de entorno
+          export DB_IP
+          export USER_NAME
+
+          # Sustituir la variable de entorno en la plantilla del YAML del backend
+          echo "Generando el archivo de despliegue del backend con la IP de la base de datos..."
+          envsubst < ${TEMPLATE_FILE} > ${OUTPUT_FILE}
+
+          # Verificar si el deployment del backend ya existe
+          EXISTING_DEPLOYMENT=$(microk8s.kubectl get deployment backend-deployment --ignore-not-found)
+
+          if [ -z "$EXISTING_DEPLOYMENT" ]; then
+            echo "Creando nuevo deployment del backend..."
+            microk8s.kubectl apply -f ${OUTPUT_FILE}
+          else
+            echo "Actualizando deployment del backend existente..."
+            IMAGE_NAME=$(grep 'image:' ${OUTPUT_FILE} | awk '{print $2}')
+            microk8s.kubectl set image deployment/backend-deployment backend=${IMAGE_NAME} --record
+          fi
+
+          echo "Despliegue del backend completo."
+
+      - name: Deploy Frontend Service
+        run: |
+          # Nombre del archivo YAML del deployment del frontend (plantilla)
+          TEMPLATE_FILE="../../frontend-deployment-template.yaml"
+
+          # Nombre del archivo YAML del deployment del frontend (resultado final)
+          OUTPUT_FILE="frontend-deployment.yaml"
+          USER_NAME=${{ secrets.DOCKERHUB_USERNAME }}
+
+          # Obtener la IP del backend (o la URL completa según tu configuración)
+          BACKEND_IP=$(microk8s.kubectl get svc backend-service -o jsonpath='{.spec.clusterIP}')
+          echo "IP del backend: $BACKEND_IP"
+
+          # Exportar la IP del backend como una variable de entorno
+          export BACKEND_IP
+          export USER_NAME
+          # Sustituir la variable de entorno en la plantilla del YAML del frontend
+          echo "Generando el archivo de despliegue del frontend con la IP del backend..."
+          envsubst < ${TEMPLATE_FILE} > ${OUTPUT_FILE}
+
+          # Verificar si el deployment del frontend ya existe
+          EXISTING_DEPLOYMENT=$(microk8s.kubectl get deployment frontend-deployment --ignore-not-found)
+
+          if [ -z "$EXISTING_DEPLOYMENT" ]; then
+            echo "Creando nuevo deployment del frontend..."
+            microk8s.kubectl apply -f ${OUTPUT_FILE}
+          else
+            echo "Actualizando deployment del frontend existente..."
+            IMAGE_NAME=$(grep 'image:' ${OUTPUT_FILE} | awk '{print $2}')
+            microk8s.kubectl set image deployment/frontend-deployment frontend=${IMAGE_NAME} --record
+          fi
+
+          sleep 10
+
+          # Entrar al pod del frontend
+          FRONTEND_POD=$(microk8s.kubectl get pods -l app=frontend -o jsonpath='{.items[0].metadata.name}')
+          echo "Entrando al pod del frontend: ${FRONTEND_POD}"
+          microk8s.kubectl exec -it ${FRONTEND_POD} -- /bin/bash -c "sed -i 's|backend_host: .*|backend_host: \"$BACKEND_IP\" |' /app/src/environments/environment.ts"
+
+          echo "Despliegue del frontend completo y actualización de environment.ts."
