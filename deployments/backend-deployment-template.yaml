@@ -19,7 +19,7 @@ spec:
         - containerPort: 3000
         env:
         - name: DB_HOST
-          value: "10.152.183.87"
+          value: "${DB_IP}"
 ---
 apiVersion: v1
 kind: Service

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { ProductsService } from '../services/products.service';
 import { Product, Products } from '../../types';
 import { ProductComponent } from '../components/product/product.component';
@@ -6,6 +6,10 @@ import { CommonModule } from '@angular/common';
 import { Paginator, PaginatorModule } from 'primeng/paginator';
 import { EditPopupComponent } from '../components/edit-popup/edit-popup.component';
 import { ButtonModule } from 'primeng/button';
+import {environment} from "../../environments/environment";
+
+declare const window: any;
+
 
 @Component({
   selector: 'app-home',
@@ -59,6 +63,9 @@ export class HomeComponent {
     rating: 0,
   };
 
+
+  apiUrl: string = `http://${environment.backend_host}:3000/clothes`;
+
   onConfirmEdit(product: Product) {
     if (!this.selectedProduct.id) {
       return;
@@ -87,7 +94,7 @@ export class HomeComponent {
 
   fetchProducts(page: number, perPage: number) {
     this.productsService
-      .getProducts('http://10.152.183.152:3000/clothes', { page, perPage }) //Hacer ip dinamica de acuerdo al nombre del contenedor
+      .getProducts(this.apiUrl, { page, perPage }) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data: Products) => {
           this.products = data.items;
@@ -101,7 +108,7 @@ export class HomeComponent {
 
   editProduct(product: Product, id: number) {
     this.productsService
-      .editProduct(`http://10.152.183.152:3000/clothes/${id}`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
+      .editProduct(`${this.apiUrl}/${id}`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);
@@ -116,7 +123,7 @@ export class HomeComponent {
 
   deleteProduct(id: number) {
     this.productsService
-      .deleteProduct(`http://10.152.183.152:3000/clothes/${id}`) //Hacer ip dinamica de acuerdo al nombre del contenedor
+      .deleteProduct(`${this.apiUrl}/${id}`) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);
@@ -131,7 +138,7 @@ export class HomeComponent {
 
   addProduct(product: Product) {
     this.productsService
-      .addProduct(`http://10.152.183.152:3000/clothes`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
+      .addProduct(`${this.apiUrl}/clothes`, product) //Hacer ip dinamica de acuerdo al nombre del contenedor
       .subscribe({
         next: (data) => {
           console.log(data);
