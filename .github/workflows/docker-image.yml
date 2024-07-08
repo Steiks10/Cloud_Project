@@ -17,17 +17,17 @@ jobs:
       - name: Build Docker Image
         run: |
           cd angular-cc-1-client
-          sudo docker build -t express:latest .
+          docker build -t express:latest .
     
       - name: Docker Login
         env:
           DOCKER_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
-          sudo docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
       - name: Push Docker Image
         run: |
-          sudo docker push $DOCKER_USER/express:latest
+          docker push $DOCKER_USER/express:latest
 
 # name: Docker deployment
 
