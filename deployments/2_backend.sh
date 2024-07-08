@@ -17,17 +17,9 @@ export DB_IP
 echo "Generando el archivo de despliegue del backend con la IP de la base de datos..."
 envsubst < ${TEMPLATE_FILE} > ${OUTPUT_FILE}
 
-# Verificar si el deployment del backend ya existe
-EXISTING_DEPLOYMENT=$(microk8s.kubectl get deployment backend-deployment --ignore-not-found)
-
-if [ -z "$EXISTING_DEPLOYMENT" ]; then
-  echo "Creando nuevo deployment del backend..."
-  microk8s.kubectl apply -f ${OUTPUT_FILE}
-else
-  echo "Actualizando deployment del backend existente..."
-  IMAGE_NAME=$(grep 'image:' ${OUTPUT_FILE} | awk '{print $2}')
-  microk8s.kubectl set image deployment/backend-deployment backend=${IMAGE_NAME} --record
-fi
+# Ejecutar el YAML de despliegue para crear el pod del backend en MicroK8s
+echo "Desplegando el backend..."
+microk8s.kubectl apply -f ${OUTPUT_FILE}
 
 echo "Despliegue del backend completo."
 
