@@ -16,7 +16,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          cd angular-cc-1-client
+          cd angular-cc-1-server
           docker build -t express:latest .
     
       - name: Login to Docker Hub
@@ -24,13 +24,23 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Create tag
+      - name: Create backend image tag
         run: |
           docker tag express:latest ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
-      - name: Push Docker Image
+      - name: Push Docker backend Image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
-
+        
+      - name: Build Frontend image
+        run: |
+          cd angular-cc-1-client
+          docker build -t angular:latest .
+      - name: Create frontend tag
+        run: |
+          docker tag angular:latest ${{ secrets.DOCKERHUB_USERNAME }}/angular:latest
+      - name: Push Docker frontend Image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular:latest
 # name: Docker deployment
 
 # on:
