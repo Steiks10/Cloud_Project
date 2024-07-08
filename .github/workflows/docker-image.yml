@@ -26,7 +26,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push Docker Image
         run: |
-          docker push $DOCKER_USER/express:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/express:latest
 
 # name: Docker deployment
 
