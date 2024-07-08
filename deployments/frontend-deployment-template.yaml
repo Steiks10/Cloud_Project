@@ -19,7 +19,7 @@ spec:
         - containerPort: 4200
         env:
         - name: BACKEND_HOST
-          value: "10.152.183.94"
+          value: "${BACKEND_IP}"
 ---
 apiVersion: v1
 kind: Service

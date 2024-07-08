@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: db-1
-        image: steiks1/postgres:15
+        image: postgres:15
         ports:
         - containerPort: 5432
         env:
