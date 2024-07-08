@@ -22,7 +22,7 @@ microk8s.kubectl cp ${SQL_FILE} ${POD_NAME}:/tmp/${SQL_FILE}
 
 # Ejecutar el script SQL dentro del contenedor de PostgreSQL (db-1)
 echo "Ejecutando script SQL (${SQL_FILE}) en la base de datos clothing_store..."
-microk8s.kubectl exec ${POD_NAME} -- psql -U db-1 -d clothing_store -f /tmp/${SQL_FILE}
+microk8s.kubectl exec ${POD_NAME} -- psql -U postgres -d clothing_store -f /tmp/${SQL_FILE}
 
 echo "Script SQL ejecutado exitosamente."
 
