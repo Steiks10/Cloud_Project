@@ -17,9 +17,17 @@ export BACKEND_IP
 echo "Generando el archivo de despliegue del frontend con la IP del backend..."
 envsubst < ${TEMPLATE_FILE} > ${OUTPUT_FILE}
 
-# Aplicar el YAML de despliegue para crear el pod del frontend en Kubernetes
-echo "Desplegando el frontend..."
-microk8s.kubectl apply -f ${OUTPUT_FILE}
+# Verificar si el deployment del frontend ya existe
+EXISTING_DEPLOYMENT=$(microk8s.kubectl get deployment frontend-deployment --ignore-not-found)
+
+if [ -z "$EXISTING_DEPLOYMENT" ]; then
+  echo "Creando nuevo deployment del frontend..."
+  microk8s.kubectl apply -f ${OUTPUT_FILE}
+else
+  echo "Actualizando deployment del frontend existente..."
+  IMAGE_NAME=$(grep 'image:' ${OUTPUT_FILE} | awk '{print $2}')
+  microk8s.kubectl set image deployment/frontend-deployment frontend=${IMAGE_NAME} --record
+fi
 
 sleep 10
 
