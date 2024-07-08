@@ -14,20 +14,12 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ${DOCKER_USERNAME}/express:latest
-        env:
-        - name: DB_USER
-          value: postgres
-        - name: DB_HOST
-          value: "10.152.183.127"  # Esto se actualizará dinámicamente
-        - name: DB_NAME
-          value: clothing_store
-        - name: DB_PASSWORD
-          value: postgres
-        - name: DB_PORT
-          value: "5432"
+        image: marcocastrof/express:latest
         ports:
         - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "${DB_IP}"
 ---
 apiVersion: v1
 kind: Service
